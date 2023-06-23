@@ -1,5 +1,5 @@
 # firebase-otp
-Simple send and authentication otp from firebase
+Simple send and authentication otp from firebase, just change your firebase details on line 57 - 62, easiest for get firebase details, you can download google-services.json from your firebase project settings page.
 
 # Let's connect with me!
 <p>
