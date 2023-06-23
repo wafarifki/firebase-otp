@@ -1,0 +1,112 @@
+<html translate="no">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <meta name="google" content="notranslate" />
+        <title>Verifikasi OTP Via Firebase</title>
+        <link rel="shortcut icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRj051PyYaf14fAFw6XMAt7F37pGPLGjGeOiZbBEYU&s" type="image/x-icon">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <style>
+            button:active, button:focus, .btn:active, .btn:focus, input:active, input:focus {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            #container {
+                position:absolute;
+                top:50%;
+                left:50%;
+                transform:translate(-50%, -50%);
+                max-width: 361px;
+                width: 361px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="container">
+            <div class="card" id="otpsection">
+                <div class="card-header">Verifikasi OTP Via Firebase</div>
+                <div class="card-body">
+                    <div class="alert alert-danger" id="errorsection" style="display: none;"></div>
+                    <div class="alert alert-success" id="successsection" style="display: none;"></div>
+                    <form>
+                        <input type="text" id="nomerhp" class="form-control" placeholder="Masukkan nomor handphone" value="+62"  autocomplete="off" required />
+                        <div id="recaptcha-container" class="mt-2"></div>
+                        <button type="button" class="btn btn-primary btn-md mt-2 w-100" onclick="kirimOTP();">Send OTP</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card" id="verifotpsection" style="display: none;">
+                <div class="card-header" id="vc">Verifikasi Kode OTP</div>
+                <div class="card-body">
+                    <div class="alert alert-success" id="successotpsection" style="margin-bottom: 0; display: none;"></div>
+                    <form id="as">
+                        <input type="number" id="verifikasikode" class="form-control" placeholder="Masukkan kode otp..."  autocomplete="off" required/>
+                        <button type="button" class="btn btn-success btn-md mt-2 w-100" onclick="verifikasiOTP()">Verifikasi Kode OTP</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/7.14.2-0/firebase.js"></script>
+        
+
+        <script type="text/javascript">
+            var firebaseConfig = {
+                apiKey: "", //isi dengan api key / web api key dari firebase
+                authDomain: "", //isi auth domain firebase, jika bingung cari di googleservices.json
+                projectId: "", //isi dengan project-id
+                storageBucket: "", //isi dengan storage bucket url, silahkan buat storage terlebih dahulu
+                messagingSenderId: "", //isi dengan sender id dari firebase di tab cloud messaging
+                appId: "",  //isi dengan server key dari firebase di tab cloud messaging
+            };
+            firebase.initializeApp(firebaseConfig);
+            
+            window.onload = function () {
+                render();
+            };
+            function render() {
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier("recaptcha-container");
+                recaptchaVerifier.render();
+            }
+            function kirimOTP() {
+                var number = $("#nomerhp").val();
+                firebase
+                    .auth()
+                    .signInWithPhoneNumber(number, window.recaptchaVerifier)
+                    .then(function (confirmationResult) {
+                        window.confirmationResult = confirmationResult;
+                        coderesult = confirmationResult;
+                        //console.log(coderesult); uncomment jika membutuhkan log
+                        document.getElementById("verifotpsection").style.display = "block";
+                        document.getElementById("otpsection").style.display = "none";
+                        $("#successsection").text("Kode OTP Berhasil Dikirim!");
+                        $("#successsection").show();
+                    })
+                    .catch(function (error) {
+                        $("#errorsection").text(error.message);
+                        $("#errorsection").show();
+                    });
+            }
+
+            function verifikasiOTP() {
+                var code = $("#verifikasikode").val();
+                coderesult
+                    .confirm(code)
+                    .then(function (result) {
+                        var user = result.user;
+                        //console.log(user); uncomment jika membutuhkan log
+                        document.getElementById("as").style.display = "none";
+                        document.getElementById("vc").style.display = "none";
+                        $("#successotpsection").text("Autentikasi Berhasil!");
+                        $("#successotpsection").show();
+                    })
+                    .catch(function (error) {
+                        $("#errorsection").text(error.message);
+                        $("#errorsection").show();
+                    });
+            }
+        </script>
+    </body>
+</html>
